@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+.env
+.DS_Store
+reports/
+master.xlsx
+collections.json
+email_config.json
+server_config.json
+planilha_*.xlsx

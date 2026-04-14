@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Coleta Mobile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container py-4">
+      <h1 class="h4">Coleta Mobile</h1>
+      <p>Use o celular para iniciar coleta e registrar medidores diretamente no servidor.</p>
+
+      <div id="messages"></div>
+
+      <div id="start-panel">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h2 class="h6">Iniciar coleta</h2>
+            <div class="mb-3">
+              <label class="form-label">Equipe</label>
+              <input id="equipe" class="form-control" placeholder="Nome da equipe" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Operador</label>
+              <input id="operador" class="form-control" placeholder="Nome do operador" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">API Key (opcional)</label>
+              <input id="api_key" class="form-control" placeholder="Use se configurado no servidor" />
+            </div>
+            <button id="start-btn" class="btn btn-primary">Iniciar coleta</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="collect-panel" class="d-none">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h2 class="h6">Registrar medidor</h2>
+            <div class="mb-3">
+              <label class="form-label">ID da coleta</label>
+              <input id="collection_id" class="form-control" readonly />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Medidor / Código de barras</label>
+              <input id="medidor" class="form-control" placeholder="Leia ou digite o código" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tipo</label>
+              <select id="tipo" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Monofásico">Monofásico</option>
+                <option value="Bifásico">Bifásico</option>
+                <option value="Trifásico">Trifásico</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select id="status" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Em uso">Em uso</option>
+                <option value="Retirado">Retirado</option>
+                <option value="Devolvido">Devolvido</option>
+                <option value="Aguardando baixa">Aguardando baixa</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Observações</label>
+              <input id="observacoes" class="form-control" placeholder="Texto opcional" />
+            </div>
+            <button id="register-btn" class="btn btn-success">Registrar medidor</button>
+            <button id="finish-btn" class="btn btn-outline-secondary ms-2">Encerrar coleta</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const messages = document.getElementById('messages');
+      const startBtn = document.getElementById('start-btn');
+      const registerBtn = document.getElementById('register-btn');
+      const finishBtn = document.getElementById('finish-btn');
+      const collectPanel = document.getElementById('collect-panel');
+      const collectionIdField = document.getElementById('collection_id');
+
+      function showMessage(text, type = 'info') {
+        messages.innerHTML = `<div class="alert alert-${type}">${text}</div>`;
+      }
+
+      function getHeaders() {
+        const apiKey = document.getElementById('api_key').value.trim();
+        const headers = { 'Content-Type': 'application/json' };
+        if (apiKey) headers['X-API-KEY'] = apiKey;
+        return headers;
+      }
+
+      async function startCollection() {
+        const equipe = document.getElementById('equipe').value.trim();
+        const operador = document.getElementById('operador').value.trim();
+        if (!equipe || !operador) {
+          showMessage('Informe equipe e operador.', 'warning');
+          return;
+        }
+
+        const response = await fetch('/api/start', {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ equipe, operador }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          showMessage(data.error || 'Erro ao iniciar coleta.', 'danger');
+          return;
+        }
+        collectionIdField.value = data.collection_id;
+        collectPanel.classList.remove('d-none');
+        showMessage('Coleta iniciada com sucesso.', 'success');
+      }
+
+      async function registerItem() {
+        const collectionId = collectionIdField.value.trim();
+        const medidor = document.getElementById('medidor').value.trim();
+        const tipo = document.getElementById('tipo').value.trim();
+        const status = document.getElementById('status').value.trim();
+        const observacoes = document.getElementById('observacoes').value.trim();
+        if (!medidor || !tipo || !status) {
+          showMessage('Preencha medidor, tipo e status.', 'warning');
+          return;
+        }
+
+        const response = await fetch(`/api/collect/${collectionId}`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ medidor, tipo, status, observacoes }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          showMessage(data.error || 'Erro ao registrar medidor.', 'danger');
+          return;
+        }
+        document.getElementById('medidor').value = '';
+        document.getElementById('observacoes').value = '';
+        showMessage('Registro salvo com sucesso.', 'success');
+      }
+
+      async function finalizeCollection() {
+        const collectionId = collectionIdField.value.trim();
+        const response = await fetch(`/api/finalize/${collectionId}`, {
+          method: 'POST',
+          headers: getHeaders(),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          showMessage(data.error || 'Erro ao encerrar coleta.', 'danger');
+          return;
+        }
+        showMessage('Coleta finalizada. ' + (data.report ? `Relatório: ${data.report}` : ''), 'success');
+        collectPanel.classList.add('d-none');
+      }
+
+      startBtn.addEventListener('click', startCollection);
+      registerBtn.addEventListener('click', registerItem);
+      finishBtn.addEventListener('click', finalizeCollection);
+    </script>
+  </body>
+</html>

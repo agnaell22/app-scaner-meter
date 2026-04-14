@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Coleta de Medidores</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container py-4">
+      <h1>Coleta de Medidores</h1>
+      <p>Use este app para iniciar uma coleta, registrar códigos de barras pelo celular e gravar os dados na planilha mestre.</p>
+      <div class="alert alert-info">
+        Abra no PC: <strong>http://localhost:5000</strong><br />
+        Abra no celular (mesma rede): <strong>http://<span id="local-ip">seu-ip</span>:5000</strong>
+      </div>
+      <div class="mb-3">
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('settings') }}">Configurar email</a>
+      </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div>
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <div class="card mb-4">
+        <div class="card-body">
+          <h2 class="h5">Iniciar nova coleta</h2>
+          <form method="post" action="{{ url_for('start_collection') }}">
+            <div class="mb-3">
+              <label class="form-label">Equipe</label>
+              <input class="form-control" name="equipe" placeholder="Nome da equipe" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Operador / Usuário</label>
+              <input class="form-control" name="operador" placeholder="Nome do usuário" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Iniciar coleta</button>
+          </form>
+        </div>
+      </div>
+
+      {% if active %}
+      <div class="card mb-4">
+        <div class="card-body">
+          <h2 class="h5">Coletas ativas</h2>
+          <ul class="list-group">
+            {% for c in active %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ c.equipe }}</strong><br />Operador: {{ c.operador }}<br />Início: {{ c.start }}
+              </div>
+              <a class="btn btn-sm btn-outline-primary" href="{{ url_for('collect', collection_id=c.id) }}">Continuar</a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="mb-4">
+        <a class="btn btn-secondary" href="{{ url_for('history') }}">Ver histórico de coletas</a>
+        <a class="btn btn-success ms-2" href="{{ url_for('mobile') }}">Abrir versão mobile</a>
+      </div>
+    </div>
+    <script>
+      function setLocalIp() {
+        const fragment = document.getElementById('local-ip');
+        fragment.textContent = 'use o IP do PC na rede local';
+      }
+      setLocalIp();
+    </script>
+  </body>
+</html>

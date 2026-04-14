@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Coleta {{ collection.equipe }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container py-4">
+      <h1>Coleta da equipe {{ collection.equipe }}</h1>
+      <p>Operador: <strong>{{ collection.operador }}</strong> | Início: <strong>{{ collection.start }}</strong></p>
+      <p>Registros: <strong>{{ collection.items|length }}</strong></p>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div>
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <div class="card mb-4">
+        <div class="card-body">
+          <form method="post">
+            <div class="mb-3">
+              <label class="form-label">Medidor / Código de barras</label>
+              <input class="form-control" name="medidor" required autofocus />
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Tipo</label>
+                <select class="form-select" name="tipo" required>
+                  <option value="">Selecione</option>
+                  <option value="Monofásico">Monofásico</option>
+                  <option value="Bifásico">Bifásico</option>
+                  <option value="Trifásico">Trifásico</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" name="status" required>
+                  <option value="">Selecione</option>
+                  <option value="Em uso">Em uso</option>
+                  <option value="Retirado">Retirado</option>
+                  <option value="Devolvido">Devolvido</option>
+                  <option value="Aguardando baixa">Aguardando baixa</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Observações</label>
+                <input class="form-control" name="observacoes" placeholder="Anotações opcionais" />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Registrar</button>
+            <a class="btn btn-secondary" href="{{ url_for('index') }}">Voltar</a>
+          </form>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-body">
+          <h2 class="h5">Últimos registros</h2>
+          {% if last_items %}
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Data / Hora</th>
+                  <th>Medidor</th>
+                  <th>Tipo</th>
+                  <th>Status</th>
+                  <th>Obs</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in last_items %}
+                <tr>
+                  <td>{{ item.timestamp }}</td>
+                  <td>{{ item.medidor }}</td>
+                  <td>{{ item.tipo }}</td>
+                  <td>{{ item.status }}</td>
+                  <td>{{ item.observacoes }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p>Nenhum registro ainda.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <form method="post" action="{{ url_for('finalize', collection_id=collection.id) }}">
+        <button type="submit" class="btn btn-success">Encerrar coleta e gerar relatório</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('report', collection_id=collection.id) }}">Ver relatório</a>
+      </form>
+
+      {% if not reportlab_available %}
+      <div class="alert alert-warning mt-3">
+        A geração de PDF exige a biblioteca <strong>reportlab</strong>. Se não estiver instalada, o relatório será salvo em texto simples.
+      </div>
+      {% endif %}
+    </div>
+  </body>
+</html>

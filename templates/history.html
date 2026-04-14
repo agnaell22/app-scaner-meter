@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Histórico de coletas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container py-4">
+      <h1>Histórico de coletas</h1>
+      <a class="btn btn-secondary mb-3" href="{{ url_for('index') }}">Voltar</a>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Equipe</th>
+              <th>Operador</th>
+              <th>Início</th>
+              <th>Status</th>
+              <th>Registros</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in collections %}
+            <tr>
+              <td>{{ c.equipe }}</td>
+              <td>{{ c.operador }}</td>
+              <td>{{ c.start }}</td>
+              <td>{{ c.status }}</td>
+              <td>{{ c.items|length }}</td>
+              <td>
+                <a class="btn btn-sm btn-primary" href="{{ url_for('report', collection_id=c.id) }}">Relatório</a>
+                {% if c.status != 'finalizada' %}
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('collect', collection_id=c.id) }}">Continuar</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
