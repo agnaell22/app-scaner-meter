@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: nosvos-app
+    name: app-scan-meter
     env: python
     region: oregon
     plan: free
@@ -8,5 +8,28 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn server:app
     envVars:
+      # Flask Configuration
+      - key: FLASK_ENV
+        value: "production"
       - key: FLASK_DEBUG
         value: "False"
+
+      # Supabase Configuration (REQUIRED - Add your actual values)
+      - key: SUPABASE_URL
+        sync: false
+        # Set this in your Render dashboard environment variables
+      - key: SUPABASE_KEY
+        sync: false
+        # Set this in your Render dashboard environment variables
+      - key: SUPABASE_TABLE
+        value: "medicoes"
+
+      # Flask Secret Key (REQUIRED - Generate a secure random key)
+      # Generate via: python -c "import os; print(os.urandom(24).hex())"
+      # Then set it in your Render dashboard environment variables
+      - key: SECRET_KEY
+        sync: false
+
+      # API Key (OPTIONAL - Leave empty to disable, or set a secure key)
+      - key: API_KEY
+        sync: false
