@@ -14,9 +14,6 @@
         Abra no PC: <strong>http://localhost:5000</strong><br />
         Abra no celular (mesma rede): <strong>http://<span id="local-ip">seu-ip</span>:5000</strong>
       </div>
-      <div class="mb-3">
-        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('settings') }}">Configurar email</a>
-      </div>
       {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
       <div>
