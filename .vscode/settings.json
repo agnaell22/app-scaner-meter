@@ -1,0 +1,11 @@
+{
+  "sql.linter": "prettier",
+  "[sql]": {
+    "editor.defaultFormatter": "ms-mssql.mssql",
+    "editor.formatOnSave": false
+  },
+  "sql.dialect": "pgsql",
+  "sql.format": {
+    "keywordCase": "upper"
+  }
+}
