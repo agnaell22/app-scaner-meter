@@ -43,3 +43,8 @@ CREATE TABLE medicoes
     -- Criar índices para melhor performance
     CREATE INDEX idx_colecoes_status ON colecoes(status);
     CREATE INDEX idx_colecoes_created_at ON colecoes(created_at);
+    );
+
+    -- Criar índices para melhor performance
+    CREATE INDEX idx_colecoes_status ON colecoes(status);
+    CREATE INDEX idx_colecoes_created_at ON colecoes(created_at);
